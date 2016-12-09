@@ -9,15 +9,33 @@ namespace Grades
 {
     class Program
     {
-
         static void Main(string[] args)
         {
-
             GradeBook book = new GradeBook();
+
+            Console.Write("Please enter a name: ");
+
+            try
+            {
+                book.Name = Console.ReadLine();
+            }
+            catch (ArgumentException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch(NullReferenceException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
             book.AddGrade(75);
             book.AddGrade((float)89.5);
             book.AddGrade(0);
+            book.WriteGrades(Console.Out);
 
             GradeStatistics stats = book.ComputeStatistics();
             WriteResult("Average", stats.AverageGrade);
@@ -39,8 +57,18 @@ namespace Grades
         static void WriteResult(string description, string result)
         {
             Console.WriteLine(description + ": " + result);
-            SpeechSynthesizer synth = new SpeechSynthesizer();
-            synth.Speak(result);
+            //SpeechSynthesizer synth = new SpeechSynthesizer();
+            //synth.Speak(result);
+        }
+
+        static string AskForName(GradeBook book)
+        {
+            do
+            {
+                book.Name = Console.ReadLine();
+            } while (book.Name == null);
+
+            return book.Name;
         }
 
     }
