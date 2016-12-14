@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Speech.Synthesis;
 using System.Text;
@@ -11,19 +12,71 @@ namespace Grades
     {
         static void Main(string[] args)
         {
-            GradeBook book = new GradeBook();
+            IGradeTracker book = CreateGradeBook();
 
-            Console.Write("Please enter a name: ");
+            //GetBookName(book);
+            AddGrades(book);
+            SaveGrades(book);
+            WriteResults(book);
 
+            DuctTape();
+
+        }
+
+        private static IGradeTracker CreateGradeBook()
+        {
+            return new ThrowAwayGradeBook();
+        }
+
+        private static void DuctTape()
+        {
+            Console.WriteLine("Press any key to continue...");
+            string hello = Console.ReadLine();
+        }
+
+        private static void WriteResults(IGradeTracker book)
+        {
+            GradeStatistics stats = book.ComputeStatistics();
+
+            foreach(float grade in book)
+            {
+                Console.WriteLine(grade);
+            }
+
+            WriteResult("Average", stats.AverageGrade);
+            WriteResult("Highest", (int)stats.HighestGrade);
+            WriteResult("Lowest", stats.LowestGrade);
+            WriteResult("Grade", stats.LetterGrade);
+            WriteResult("Response", stats.Description);
+        }
+
+        private static void SaveGrades(IGradeTracker book)
+        {
+            using (StreamWriter outputFile = File.CreateText("grades.txt"))
+            {
+                book.WriteGrades(outputFile);
+            }
+        }
+
+        private static void AddGrades(IGradeTracker book)
+        {
+            book.AddGrade(75);
+            book.AddGrade((float)89.5);
+            book.AddGrade(0);
+        }
+
+        private static void GetBookName(IGradeTracker book)
+        {
             try
             {
+                Console.Write("Please enter a name: ");
                 book.Name = Console.ReadLine();
             }
             catch (ArgumentException e)
             {
                 Console.WriteLine(e.Message);
             }
-            catch(NullReferenceException e)
+            catch (NullReferenceException e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -31,22 +84,6 @@ namespace Grades
             {
                 Console.WriteLine(e.Message);
             }
-
-            book.AddGrade(75);
-            book.AddGrade((float)89.5);
-            book.AddGrade(0);
-            book.WriteGrades(Console.Out);
-
-            GradeStatistics stats = book.ComputeStatistics();
-            WriteResult("Average", stats.AverageGrade);
-            WriteResult("Highest", (int)stats.HighestGrade);
-            WriteResult("Lowest", stats.LowestGrade);
-            WriteResult("Grade", stats.LetterGrade);
-            WriteResult("Response", stats.Description);
-
-            Console.WriteLine("Press any key to continue...");
-            string hello = Console.ReadLine();
-            
         }
 
         static void WriteResult(string description, float result)
@@ -61,7 +98,7 @@ namespace Grades
             //synth.Speak(result);
         }
 
-        static string AskForName(GradeBook book)
+        static string AskForName(IGradeTracker book)
         {
             do
             {
